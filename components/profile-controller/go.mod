@@ -11,10 +11,14 @@ require (
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
+	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.1.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/onsi/ginkgo v1.13.0
 	github.com/onsi/gomega v1.10.2
+	// Needed for OCP scc
+	github.com/openshift/api v0.0.0-20200827090112-c05698d102cf
+	github.com/openshift/client-go v0.0.0-20200827190008-3062137373b5
 	github.com/prometheus/client_golang v1.7.1
 	github.com/prometheus/common v0.14.0 // indirect
 	github.com/prometheus/procfs v0.2.0 // indirect
@@ -49,10 +53,6 @@ require (
 	k8s.io/utils v0.0.0-20201015054608-420da100c033 // indirect
 	sigs.k8s.io/controller-runtime v0.6.3
 	sigs.k8s.io/structured-merge-diff/v4 v4.0.2 // indirect
-        // Needed for OCP scc
-        github.com/openshift/api v0.0.0-20200827090112-c05698d102cf
-	github.com/openshift/client-go v0.0.0-20200827190008-3062137373b5
-	github.com/openshift/library-go v0.0.0-20201013192036-5bd7c282e3e7
 )
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999

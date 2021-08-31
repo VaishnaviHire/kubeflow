@@ -17,8 +17,10 @@ package main
 
 import (
 	"flag"
+	networkattachv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	"os"
 
+	securityv1 "github.com/openshift/api/security/v1"
 	profilev1 "github.com/kubeflow/kubeflow/components/profile-controller/api/v1"
 	"github.com/kubeflow/kubeflow/components/profile-controller/controllers"
 	istioSecurityClient "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -44,6 +46,8 @@ func init() {
 
 	_ = profilev1.AddToScheme(scheme)
 	_ = istioSecurityClient.AddToScheme(scheme)
+	_ = securityv1.AddToScheme(scheme)
+	_ = networkattachv1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 

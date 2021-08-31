@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"reflect"
 	"time"
+	"encoding/json"
 
 	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -355,12 +356,12 @@ func (r *ProfileReconciler) appendErrorConditionAndReturn(ctx context.Context, i
 }
 
 func (r *ProfileReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	if err := securityv1.AddToScheme(mgr.GetScheme()); err != nil {
-		return err
-	}
-	if err := networkattachv1.AddToScheme(mgr.GetScheme()); err != nil {
-		return err
-	}
+	//if err := securityv1.AddToScheme(mgr.GetScheme()); err != nil {
+	//	return err
+	//}
+	//if err := networkattachv1.AddToScheme(mgr.GetScheme()); err != nil {
+	//	return err
+	//}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&profilev1.Profile{}).
 		Owns(&corev1.Namespace{}).
@@ -415,8 +416,13 @@ func (r *ProfileReconciler) updateAnyUIDScc(ctx context.Context, profileIns *pro
 	var priority int32 = 10
 	//actual, err := client.SecurityContextConstraints().Create(ctx, required, metav1.CreateOptions{})
 	scc := &securityv1.SecurityContextConstraints{
+
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "security.openshift.io/v1",
+			Kind:       "SecurityContextConstraints",
+		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "scc-"+profileIns.Name,
+			Name: "scc-" + profileIns.Name,
 		},
 		Priority:                 &priority,
 		AllowPrivilegedContainer: true,
@@ -435,7 +441,7 @@ func (r *ProfileReconciler) updateAnyUIDScc(ctx context.Context, profileIns *pro
 		//This needs to be removed, since sa default-editor is attached to notebooks and it fails to use volume when an scc is present
 		//Users: []string{"system:serviceaccount:"+profileIns.Name, "system:serviceaccount:"+profileIns.Name+":default-editor"},
 		// switched to default that is used by kfserving for serving pods
-		Users: []string{"system:serviceaccount:"+profileIns.Name, "system:serviceaccount:"+profileIns.Name+":default"},
+		Users:  []string{"system:serviceaccount:" + profileIns.Name, "system:serviceaccount:" + profileIns.Name + ":default"},
 		Groups: []string{"system:cluster-admins"},
 	}
 	if err := controllerutil.SetControllerReference(profileIns, scc, r.Scheme); err != nil {
@@ -443,12 +449,12 @@ func (r *ProfileReconciler) updateAnyUIDScc(ctx context.Context, profileIns *pro
 	}
 
 	config, err1 := rest.InClusterConfig()
-	if err1 != nil{
+	if err1 != nil {
 		logger.Info("Error getting config for K8 client")
 		return err1
 	}
 	securityCLientset, err2 := securityclientv1.NewForConfig(config)
-	if err2 != nil{
+	if err2 != nil {
 		logger.Info("Error setting config for K8 client")
 		return err2
 	}
@@ -468,27 +474,22 @@ func (r *ProfileReconciler) updateAnyUIDScc(ctx context.Context, profileIns *pro
 		 logger.Info("SCC already exists " + "scc-"+profileIns.Name)
 		 logger.Info("scc found", "found", foundscc)
 		 // update SCC
-		 if !reflect.DeepEqual(foundscc, scc) {
-			 // Could not find an easier way to copy the data, we cannot blindly say foundscc=scc it has different metadata
-			foundscc.Priority = scc.Priority
-			foundscc.AllowPrivilegedContainer = scc.AllowPrivilegedContainer
-			foundscc.AllowHostNetwork = scc.AllowHostNetwork
-			foundscc.AllowHostPorts = scc.AllowHostPorts
-			foundscc.SELinuxContext = scc.SELinuxContext
-			foundscc.RunAsUser = scc.RunAsUser
-			foundscc.FSGroup = scc.FSGroup
-			foundscc.Users = scc.Users
-			foundscc.Groups = scc.Groups
-		    updatedscc, err5 := securityCLientset.SecurityContextConstraints().Update(ctx, foundscc, metav1.UpdateOptions{})
-		    if err5 != nil {
-			    logger.Info("Error updating SCC ")
-			     return err5
-		    }
-		    if updatedscc != nil {
-	 		    logger.Info("Successfully Updated SCC:", "updated", updatedscc)
-		    }
-		 }
-	} 
+		// update SCC
+		sccPatch, err := json.Marshal(scc)
+		if err != nil {
+			return err
+		}
+		var forceApply = true
+		updatedscc, err5 := securityCLientset.SecurityContextConstraints().Patch(ctx, foundscc.Name, types.ApplyPatchType, sccPatch, metav1.PatchOptions{FieldManager: "profile-controller", Force: &forceApply})
+		if err5 != nil {
+			logger.Info("Error updating SCC ")
+			return err5
+		}
+		if updatedscc != nil {
+			logger.Info("Successfully Updated SCC:", "updated", updatedscc)
+		}
+
+	}
 	return nil
 }
 
