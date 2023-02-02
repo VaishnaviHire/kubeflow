@@ -1,0 +1,29 @@
+on:
+  push:
+    branches:
+      - 'test-workflow'
+    paths:
+      - 'components/odh-notebook-controller/config'
+
+name: Sync odh-manifests
+
+jobs:
+  copy-file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # Copy the 'manifests' folder
+      - name: Push notebook-controller manifests
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source_file: 'components/odh-notebook-controller/config' # Folder to copy
+          destination_repo: 'VaishnaviHire/odh-manifests' # Target repo
+          destination_folder: 'tests/' # Folder where to copy it
+          user_email: 'vhire@redhat.com'
+          user_name: 'VaishnaviHire'
+          commit_message: "Test syncing up"
+          git_server: 'github.com'
