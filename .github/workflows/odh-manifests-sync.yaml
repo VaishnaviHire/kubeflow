@@ -25,5 +25,6 @@ jobs:
           destination_folder: 'tests/' # Folder where to copy it
           user_email: 'vhire@redhat.com'
           user_name: 'VaishnaviHire'
+          destination_branch: 'master'
           commit_message: "Test syncing up"
           git_server: 'github.com'
