@@ -7,6 +7,7 @@ require (
 	github.com/kubeflow/kubeflow/components/notebook-controller v0.0.0-20220728153354-fc09bd1eefb8
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
+	github.com/opendatahub-io/kubeflow/components/odh-notebook-controller-webhook v0.0.0-00010101000000-000000000000
 	github.com/openshift/api v3.9.1-0.20190924102528-32369d4db2ad+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
@@ -85,3 +86,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace github.com/opendatahub-io/kubeflow/components/odh-notebook-controller-webhook => ../odh-notebook-controller-webhook
